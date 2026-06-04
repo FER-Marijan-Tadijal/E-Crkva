@@ -1,1 +1,7 @@
 .env
+.venv/
+.idea/
+.tb_token
+.tb_token.tmp
+__pycache__/
+*.pyc
