@@ -114,7 +114,7 @@ while True:
                 if line:
                     loudness = line.decode()
                     # For ThingsBoard direct MQTT, publish telemetry JSON ???
-                    client.publish(topic="v1/devices/me/telemetry", msg='{"microphone_loudness":' + loudness + "}")
+                    client.publish(topic="v1/devices/me/telemetry", msg='{"loudness":' + loudness + "}")
         else:
             conn.close()
             conn = None
