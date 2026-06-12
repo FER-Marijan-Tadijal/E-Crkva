@@ -16,11 +16,26 @@ static const char *TAG = "main";
 // prati koji se 15-min chime zadnje odsvirao
 static int s_last_ring_slot = -1;
 
+static void set_unix_time(time_t unix_time)
+{
+    struct timeval tv = {
+        .tv_sec = unix_time,
+        .tv_usec = 0
+    };
+
+    settimeofday(&tv, NULL);
+
+    time_t now;
+    time(&now);
+
+    ESP_LOGI(TAG, "Time synced: %lld", (long long)now);
+}
+
 static void on_command(const char *cmd, const char *arg) {
-   if (strcmp(cmd, "/bell/ring") == 0) {
+   if (strcmp(cmd, "ring") == 0) {
       int tone = atoi(arg);
       if (tone >= 1 && tone <= 4) bell_ring(tone);
-   } else if (strcmp(cmd, "/bell/pattern") == 0) {
+   } else if (strcmp(cmd, "pattern") == 0) {
       // format: "15 1 2 3 4"  ili  "15, 1 2 3 4"
       char buf[128];
       strncpy(buf, arg, sizeof(buf) - 1);
@@ -28,7 +43,7 @@ static void on_command(const char *cmd, const char *arg) {
 
       char *tok = strtok(buf, " ,");
       if (!tok) {
-         ESP_LOGW(TAG, "/bell/pattern: nema argumenta");
+         ESP_LOGW(TAG, "pattern: nema argumenta");
          return;
       }
       int minute = atoi(tok);
@@ -42,10 +57,13 @@ static void on_command(const char *cmd, const char *arg) {
          tok = strtok(NULL, " ,");
       }
       bell_set_pattern(minute, seq, len);
-   } else if (strcmp(cmd, "/bell/reset") == 0) {
+   } else if (strcmp(cmd, "reset") == 0) {
       s_last_ring_slot = -1;
       bell_reset_patterns();
       ESP_LOGI(TAG, "Bell resetiran");
+   } else if (strcmp(cmd, "time") == 0){
+      time_t unix_time = (time_t)atoll(arg);
+      set_unix_time(unix_time);
    } else {
       ESP_LOGW(TAG, "Nepoznata naredba: %s", cmd);
    }
@@ -79,7 +97,7 @@ static void loudness_task(void *arg) {
       if (!audio_is_playing()) {
          float db = audio_measure_db(); // ~1s citanje
          char msg[40];
-         snprintf(msg, sizeof(msg), "/bell/loudness %.2f\n", db);
+         snprintf(msg, sizeof(msg), "%.2f\n", db);
          ESP_LOGI(TAG, "Glasnoca: %.2f dB", db);
          network_send(msg);
       }
@@ -95,23 +113,12 @@ void app_main(void) {
 
    network_init(on_command);
 
-   // Time sync via SNTP
-   esp_sntp_config_t sntp_cfg = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
-   esp_netif_sntp_init(&sntp_cfg);
+   time_t now;
+   time(&now);
 
-   ESP_LOGI(TAG, "Cekam SNTP sinkronizaciju...");
-   esp_err_t sntp_ret = esp_netif_sntp_sync_wait(pdMS_TO_TICKS(10000));
-   if (sntp_ret == ESP_OK) {
-      // Croatia: CET UTC+1, CEST UTC+2 in summer
-      setenv("TZ", "CET-1CEST,M3.5.0,M10.5.0/3", 1);
-      tzset();
-      time_t now;
-      struct tm t;
-      time(&now);
-      localtime_r(&now, &t);
-      ESP_LOGI(TAG, "Vrijeme: %02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);
-   } else {
-      ESP_LOGW(TAG, "SNTP nije uspio - zvona ce raditi kad se sinkroniziraju");
+   if (now < 1000000000)
+   {
+      ESP_LOGW(TAG, "Waiting for Pycom time sync...");
    }
 
    xTaskCreate(bell_task, "bell", 4096, NULL, 4, NULL);

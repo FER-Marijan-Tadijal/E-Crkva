@@ -83,7 +83,7 @@ static void dispatch(const char *line) {
    char cmd[64], arg[64];
    cmd[0] = arg[0] = '\0';
 
-   const char *sp = strchr(line, ' ');
+   const char *sp = strchr(line, ';');
    if (sp) {
       size_t cmd_len = sp - line;
       if (cmd_len >= sizeof(cmd)) cmd_len = sizeof(cmd) - 1;

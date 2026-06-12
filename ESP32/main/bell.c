@@ -98,6 +98,7 @@ void bell_play_pattern(int minute, int hour) {
          audio_play_tone(1, TONE_MS);
          if (i < h - 1) audio_play_silence(PAUSE_MS);
       }
+      audio_play_silence(100);
       break;
    }
    default:
