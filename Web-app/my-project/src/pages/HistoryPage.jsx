@@ -25,7 +25,19 @@ export function HistoryPage() {
   const { deviceId: routeDeviceId } = useParams();
   const devicesQuery = useDevices();
   const devices = devicesQuery.data || [];
-  const device = useMemo(() => resolveEsp32Device(devices), [devices]);
+
+  const device = useMemo(() => {
+    if (!devices.length) return null;
+
+    // 1. ako postoji deviceId u URL-u → koristi njega
+    if (routeDeviceId) {
+      return devices.find((d) => getDeviceId(d) === routeDeviceId) || null;
+    }
+
+    // 2. fallback → prvi ESP32
+    return resolveEsp32Device(devices);
+  }, [devices, routeDeviceId]);
+
   const resolvedDeviceId = getDeviceId(device);
   const startTs = useMemo(() => Date.now() - 24 * 60 * 60 * 1000, []);
   const endTs = useMemo(() => Date.now(), []);

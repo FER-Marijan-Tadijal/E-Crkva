@@ -61,7 +61,7 @@ function hasMeaningfulValue(sample) {
   ].some((value) => value !== null && value !== undefined);
 }
 
-export async function runAggregator(deviceId = config.thingsboardDeviceId) {
+export async function runAggregator(deviceId) {
   await ensureStorageReady();
 
   if (!deviceId) {

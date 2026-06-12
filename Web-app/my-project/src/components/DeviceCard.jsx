@@ -54,10 +54,10 @@ export function DeviceCard({ device, snapshot, status, error, loading }) {
               snapshot?.loudness ?? snapshot?.microphone_loudness,
             )} dB`}
           />
-          <Stat
+          {/* <Stat
             label="Signal"
             value={formatTelemetryValue("lte_signal", snapshot?.lte_signal)}
-          />
+          />*/}
           <Stat
             label="Pattern"
             value={formatTelemetryValue("last_pattern", snapshot?.last_pattern)}

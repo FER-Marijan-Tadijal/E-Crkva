@@ -3,7 +3,7 @@ import { useAuthStore } from "../store/authStore";
 
 const navItems = [
   { to: "/", label: "Dashboard" },
-  { to: "/history", label: "History" },
+  // { to: "/history", label: "History" },
 ];
 
 export function AppShell() {

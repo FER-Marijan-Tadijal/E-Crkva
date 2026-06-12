@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-
+dotenv.config();
 import { config } from "./config.js";
 import deviceRoutes from "./routes/device.routes.js";
 import telemetryRoutes from "./routes/telemetry.routes.js";
@@ -9,8 +9,6 @@ import historyRoutes from "./routes/history.routes.js";
 
 import { runAggregator } from "./jobs/aggregator.job.js";
 import { ensureStorageReady } from "./services/storage.service.js";
-
-dotenv.config();
 
 const app = express();
 
@@ -25,17 +23,29 @@ app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
 
+const deviceIds = config.thingsboardDeviceIds;
+console.log("Configured ThingsBoard device IDs for aggregation:", deviceIds);
+async function runAllAggregators() {
+  await Promise.all(
+    deviceIds.map((id) =>
+      runAggregator(id).catch((error) => {
+        console.error(`Aggregator failed for device ${id}:`, error.message);
+      }),
+    ),
+  );
+}
+
 async function bootstrap() {
   await ensureStorageReady();
 
   try {
-    await runAggregator(config.thingsboardDeviceId);
+    await runAllAggregators();
   } catch (error) {
     console.warn("Initial ThingsBoard sync skipped:", error.message);
   }
 
   setInterval(() => {
-    runAggregator(config.thingsboardDeviceId).catch((error) => {
+    runAllAggregators().catch((error) => {
       console.error("Aggregator job failed:", error.message);
     });
   }, config.aggregatorIntervalMs);

@@ -35,6 +35,16 @@ export function resolveEsp32Device(devices = []) {
   return null;
 }
 
+export function resolveEsp32Devices(devices = []) {
+  const matchingDevices = devices.filter(isEsp32Device);
+
+  if (matchingDevices.length > 0) {
+    return matchingDevices;
+  }
+
+  return devices;
+}
+
 export function normalizeTelemetryValue(value) {
   if (value === null || value === undefined || value === "") {
     return null;

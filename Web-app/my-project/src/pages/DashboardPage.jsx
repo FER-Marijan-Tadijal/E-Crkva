@@ -6,13 +6,17 @@ import { MetricCard } from "../components/MetricCard";
 import { PageHeader } from "../components/PageHeader";
 import { useDeviceOverview } from "../hooks/useDeviceOverview";
 import { useDevices } from "../hooks/useDevices";
-import { getDeviceId, resolveEsp32Device } from "../utils/telemetry";
+import {
+  getDeviceId,
+  resolveEsp32Device,
+  resolveEsp32Devices,
+} from "../utils/telemetry";
 import { useEffect } from "react";
 
 export function DashboardPage() {
   const devicesQuery = useDevices();
-  const targetDevice = resolveEsp32Device(devicesQuery.data || []);
-  const overview = useDeviceOverview(targetDevice ? [targetDevice] : []);
+  const targetDevices = resolveEsp32Devices(devicesQuery.data || []);
+  const overview = useDeviceOverview(targetDevices);
 
   useEffect(() => {
     // console.log("Devices query data:", devicesQuery);
@@ -42,7 +46,7 @@ export function DashboardPage() {
     );
   }
 
-  if (!targetDevice) {
+  if (!targetDevices.length) {
     return (
       <ErrorState
         title="ESP32 device not found"
@@ -75,14 +79,6 @@ export function DashboardPage() {
         eyebrow="Overview"
         title="Church bell tower dashboard"
         description="Monitor the ESP32 bell tower, compare loudness signals, and jump into live control."
-        action={
-          <Link
-            to={`/history/${getDeviceId(targetDevice)}`}
-            className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-white/10"
-          >
-            View history
-          </Link>
-        }
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

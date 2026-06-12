@@ -1,6 +1,10 @@
 import dotenv from "dotenv";
 
 dotenv.config();
+console.log(
+  "RAW ENV THINGSBOARD_DEVICE_IDS:",
+  process.env.THINGSBOARD_DEVICE_IDS,
+);
 
 const DEFAULT_DEVICE_ID = "836f9fb0-6320-11f1-a544-db21b46190ed";
 
@@ -20,6 +24,13 @@ export const config = {
   thingsboardPassword:
     process.env.THINGSBOARD_PASSWORD || process.env.TB_PASSWORD || "",
   thingsboardDeviceId: process.env.THINGSBOARD_DEVICE_ID || DEFAULT_DEVICE_ID,
+  thingsboardDeviceIds: (
+    process.env.THINGSBOARD_DEVICE_IDS ||
+    "836f9fb0-6320-11f1-a544-db21b46190ed,df276520-63fe-11f1-a544-db21b46190ed"
+  )
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean),
   telemetryKeys: (
     process.env.THINGSBOARD_TELEMETRY_KEYS ||
     "microphone_loudness,bell_state,last_pattern,last_ring_time,esp_online,lte_signal"

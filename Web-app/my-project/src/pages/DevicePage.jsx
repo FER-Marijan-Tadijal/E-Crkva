@@ -37,10 +37,12 @@ const PATTERN_PRESETS = [
 export function DevicePage() {
   const { deviceId = "" } = useParams();
   const devicesQuery = useDevices();
-  const device = useMemo(
-    () => resolveEsp32Device(devicesQuery.data || []),
-    [devicesQuery.data],
-  );
+  const devices = devicesQuery.data || [];
+
+  const device = useMemo(() => {
+    return devices.find((d) => getDeviceId(d) === deviceId);
+  }, [devices, deviceId]);
+
   const resolvedDeviceId = getDeviceId(device);
   const historyStartTs = useMemo(() => Date.now() - 6 * 60 * 60 * 1000, []);
   const historyEndTs = useMemo(() => Date.now(), []);
@@ -80,10 +82,6 @@ export function DevicePage() {
         onRetry={devicesQuery.refetch}
       />
     );
-  }
-
-  if (deviceId && deviceId !== resolvedDeviceId) {
-    return <Navigate to={`/devices/${resolvedDeviceId}`} replace />;
   }
 
   if (latestQuery.isLoading) {
@@ -175,11 +173,11 @@ export function DevicePage() {
           value={`${formatTelemetryValue("loudness", snapshot.loudness)} dB`}
           hint="Current microphone telemetry"
         />
-        <MetricCard
+        {/* <MetricCard
           label="LTE signal"
           value={formatTelemetryValue("lte_signal", snapshot.lte_signal)}
           hint="Cellular connectivity strength"
-        />
+        /> */}
         <MetricCard
           label="Bell pattern"
           value={formatTelemetryValue("last_pattern", snapshot.last_pattern)}
