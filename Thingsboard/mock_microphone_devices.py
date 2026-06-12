@@ -721,21 +721,6 @@ def handle_gateway_rpc(client: mqtt.Client, payload: dict) -> None:
 
 
 def handle_direct_pycom_rpc(client: mqtt.Client, request_id: str, payload: dict) -> None:
-    """
-    Fallback/direct RPC handler.
-
-    Send REST RPC to the Pycom gateway device, not the ESP32 device:
-
-    {
-      "method": "bell.pattern",
-      "params": {
-        "targetDevice": "esp32-bell-node-001",
-        "pattern": "15;4 3 2 1,"
-      }
-    }
-
-    Pycom then forwards to ESP32 locally and stores the result as ESP32 telemetry.
-    """
     print("\nRAW DIRECT PYCOM RPC PAYLOAD:", payload)
 
     method = payload.get("method")
